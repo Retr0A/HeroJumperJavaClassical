@@ -2,6 +2,11 @@ package org.herojumper.game;
 
 import java.awt.Canvas;
 import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.image.BufferStrategy;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
+import java.nio.Buffer;
 
 import javax.swing.JFrame;
 
@@ -14,20 +19,46 @@ public class Game extends Canvas implements Runnable {
 	public static final int SCALE = 4;
 	public static final String TITLE = "Hero Jumper Pre-Release 0.1";
 	
+	private boolean isRunning = false;
+	
+	public static BufferedImage image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
+	public static final int[] pixels = ((DataBufferInt)image.getRaster().getDataBuffer()).getData();
+	
 	public Game() {
 		
 	}
 	
 	public void start() {
+		if (isRunning)
+			return;
 		
+		isRunning = true;
+		
+		new Thread(this).start();
 	}
 	
 	public void run() {
-		
+		while(isRunning) {
+			render();
+			update();
+		}
 	}
 	
 	public void render() {
+		BufferStrategy bs = getBufferStrategy();
+		if (bs == null) {
+			createBufferStrategy(3);
+			return;
+		}
 		
+		//Draw here.
+		Graphics g = bs.getDrawGraphics();
+		
+		g.drawImage(image, 0, 0, WIDTH * SCALE, HEIGHT * SCALE, null);
+		//
+		
+		g.dispose();
+		bs.show();
 	}
 	
 	public void update() {
