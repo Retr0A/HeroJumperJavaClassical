@@ -18,6 +18,7 @@ public class Game extends Canvas implements Runnable {
 	public static final int HEIGHT = WIDTH * 3 / 4;//230;
 	public static final int SCALE = 4;
 	public static final String TITLE = "Hero Jumper Pre-Release 0.1";
+	public static final double FRAME_LIMIT = 60.0;
 	
 	private boolean isRunning = false;
 	
@@ -38,10 +39,43 @@ public class Game extends Canvas implements Runnable {
 	}
 	
 	public void run() {
-		while(isRunning) {
-			render();
-			update();
-		}
+		final double nsPerUpdate = 1000000000.0 / FRAME_LIMIT;
+
+        long lastTime = System.nanoTime();
+        double unprocessedTime = 0;
+
+        int frames = 0;
+        int updates = 0;
+
+        long frameCounter = System.currentTimeMillis();
+
+        while (isRunning)
+        {
+            long currentTime = System.nanoTime();
+            long passedTime = currentTime - lastTime;
+            lastTime = currentTime;
+            unprocessedTime += passedTime;
+
+            if (unprocessedTime >= nsPerUpdate)
+            {
+                unprocessedTime = 0;
+                update();
+                updates++;
+            }
+
+            render();
+            frames++;
+
+            if (System.currentTimeMillis() - frameCounter >= 1000)
+            {
+                System.out.println("FPS: " + frames);
+                frames = 0;
+                updates = 0;
+                frameCounter += 1000;
+            }
+        }
+		
+		System.exit(0);
 	}
 	
 	public void render() {
@@ -63,6 +97,13 @@ public class Game extends Canvas implements Runnable {
 	
 	public void update() {
 		
+	}
+	
+	public void stop() {
+		if (!isRunning)
+			return;
+		
+		isRunning = false;
 	}
 	
 	public static void main(String[] args) {
