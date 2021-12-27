@@ -6,7 +6,6 @@ import java.awt.Graphics;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
-import java.nio.Buffer;
 
 import javax.swing.JFrame;
 
@@ -17,7 +16,7 @@ public class Game extends Canvas implements Runnable {
 	private static final long serialVersionUID = 1L;
 	
 	public static final int WIDTH = 280;
-	public static final int HEIGHT = WIDTH * 3 / 4;//230;
+	public static final int HEIGHT = WIDTH * 3 / 4;
 	public static final int SCALE = 4;
 	public static final String TITLE = "Hero Jumper Pre-Release 0.1";
 	public static final double FRAME_LIMIT = 60.0;
@@ -42,6 +41,7 @@ public class Game extends Canvas implements Runnable {
 		new Thread(this).start();
 	}
 	
+	@SuppressWarnings("unused")
 	public void run() {
 		final double nsPerUpdate = 100000000.0 / FRAME_LIMIT;
 

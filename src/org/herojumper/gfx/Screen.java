@@ -25,12 +25,13 @@ public class Screen extends Bitmap {
 	
 	public void render() {
 		t++;
-		int ox = (int) (Math.sin(t / 1000.0) * width / 2);
-		int oy = (int) (Math.cos(t / 1000.0) * height / 2);
+		//int ox = (int) (Math.sin(t / 1000.0) * width / 2);
+		//int oy = (int) (Math.cos(t / 1000.0) * height / 2);
 		
 		clear();
 		//render(test, (width - 50) / 2 + ox, (height - 50) / 2 + oy);
 		render3D.render();
+		render3D.renderFog();
 		render(render3D, 0, 0);
 	}
 	
