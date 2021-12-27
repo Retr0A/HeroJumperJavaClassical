@@ -46,7 +46,7 @@ public class Bitmap3D extends Bitmap {
 				int yPix = (int) (xd * rSin + zd * rCos + yCam);
 				
 				depthBuffer[x + y * width] = zd;
-				pixels[x + y * width] = ((yPix & 15) * 16) << 8 | (xPix & 15) * 16;
+				pixels[x + y * width] = Textures.tilemap.pixels[(xPix & 15) | (yPix & 15) * Textures.tilemap.width];
 			}
 		}
 	}
