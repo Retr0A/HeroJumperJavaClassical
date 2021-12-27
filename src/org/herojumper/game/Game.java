@@ -10,6 +10,8 @@ import java.nio.Buffer;
 
 import javax.swing.JFrame;
 
+import org.herojumper.gfx.Screen;
+
 public class Game extends Canvas implements Runnable {
 	
 	private static final long serialVersionUID = 1L;
@@ -25,8 +27,10 @@ public class Game extends Canvas implements Runnable {
 	public static BufferedImage image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
 	public static final int[] pixels = ((DataBufferInt)image.getRaster().getDataBuffer()).getData();
 	
+	private Screen screen;
+	
 	public Game() {
-		
+		screen = new Screen(WIDTH, HEIGHT);
 	}
 	
 	public void start() {
@@ -39,7 +43,7 @@ public class Game extends Canvas implements Runnable {
 	}
 	
 	public void run() {
-		final double nsPerUpdate = 1000000000.0 / FRAME_LIMIT;
+		final double nsPerUpdate = 100000000.0 / FRAME_LIMIT;
 
         long lastTime = System.nanoTime();
         double unprocessedTime = 0;
@@ -68,7 +72,8 @@ public class Game extends Canvas implements Runnable {
 
             if (System.currentTimeMillis() - frameCounter >= 1000)
             {
-                System.out.println("FPS: " + frames);
+                /*System.out.println("FPS: " + frames +
+                				   "\nUPDATES: " + updates);*/
                 frames = 0;
                 updates = 0;
                 frameCounter += 1000;
@@ -88,6 +93,10 @@ public class Game extends Canvas implements Runnable {
 		//Draw here.
 		Graphics g = bs.getDrawGraphics();
 		
+		screen.render();
+		for (int i = 0; i < pixels.length; i++) {
+			pixels[i] = screen.pixels[i];
+		}
 		g.drawImage(image, 0, 0, WIDTH * SCALE, HEIGHT * SCALE, null);
 		//
 		
@@ -96,7 +105,7 @@ public class Game extends Canvas implements Runnable {
 	}
 	
 	public void update() {
-		
+		screen.update();
 	}
 	
 	public void stop() {
