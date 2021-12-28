@@ -10,6 +10,7 @@ import java.awt.image.DataBufferInt;
 import javax.swing.JFrame;
 
 import org.herojumper.gfx.Screen;
+import org.herojumper.input.InputHandler;
 
 public class MainComponent extends Canvas implements Runnable {
 	
@@ -28,6 +29,7 @@ public class MainComponent extends Canvas implements Runnable {
 	
 	private Game game;
 	private Screen screen;
+	private InputHandler inputHandler;
 	
 	public MainComponent() {
 	}
@@ -45,6 +47,7 @@ public class MainComponent extends Canvas implements Runnable {
 	public void init() {
 		game = new Game();
 		screen = new Screen(WIDTH, HEIGHT);
+		inputHandler = new InputHandler();
 	}
 	
 	@SuppressWarnings("unused")

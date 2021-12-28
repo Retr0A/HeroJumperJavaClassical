@@ -5,23 +5,30 @@ import org.herojumper.game.Game;
 public class Bitmap3D extends Bitmap {
 
 	private double xCam, yCam, zCam, rot, rSin, rCos, fov;
+	
 	private double[] depthBuffer;
+	private double[] depthBufferWall;
 
 	public Bitmap3D(int width, int height) {
 		super(width, height);
 
 		depthBuffer = new double[width * height];
+		depthBufferWall = new double[width];
 	}
 
 	public void render(Game game) {
 
+		for (int x = 0; x < width; x++)
+			depthBufferWall[x] = 0;
+		
 		fov = height;
 
-		// xCam = game.time % 1000.0 / 500.0;
-		//yCam = 0;
-		// zCam = Math.sin(game.time / 100.0) * 2;
+		//xCam = game.time % 1000.0 / 500.0;
+		//yCam = game.time % 1000.0 / 500.0;
+		//zCam = Math.sin(game.time / 100.0) * 2;
 		rot = Math.sin(game.time / 300.0) * 0.6;
-
+		//rot = 0.3;
+		
 		rSin = Math.sin(rot);
 		rCos = Math.cos(rot);
 
@@ -50,61 +57,100 @@ public class Bitmap3D extends Bitmap {
 			}
 		}
 
-		renderWall(1, 3, 1, 2);
-		renderWall(0, 3, 1, 3);
-		renderWall(0, 2, 0, 3);
+		renderWall(0, 2, 1, 2);
+		renderWall(0, 1, 0, 2);
+		renderWall(0, 0, 0, 1);
+		renderWall(1, 2, 1, 1);
+		renderWall(1, 1, 1, 0);
 	}
 
 	public void renderWall(double x0, double y0, double x1, double y1) {
-		double xo0 = x0 - 0.5 - xCam * 2;
-		double u0 = -0.5 + zCam / 4;
-		double d0 = +0.5 + zCam / 4;
-		double zo0 = y0 - yCam * 2;
+		double xo0 = x0 - 0.5 - xCam;
+		double u0 = -0.5 + zCam / 8;
+		double d0 = +0.5 + zCam / 8;
+		double zo0 = y0 - yCam;
 
 		double xx0 = xo0 * rCos + zo0 * rSin;
 		double zz0 = -xo0 * rSin + zo0 * rCos;
 
-		double xo1 = x1 - 0.5 - xCam * 2;
-		double u1 = -0.5 + zCam / 4;
-		double d1 = +0.5 + zCam / 4;
-		double zo1 = y1 - yCam * 2;
+		double xo1 = x1 - 0.5 - xCam;
+		double u1 = -0.5 + zCam / 8;
+		double d1 = +0.5 + zCam / 8;
+		double zo1 = y1 - yCam;
 
 		double xx1 = xo1 * rCos + zo1 * rSin;
 		double zz1 = -xo1 * rSin + zo1 * rCos;
 
+		double t0 = 0;
+		double t1 = 16;
+		
+		double clip = 0.1;
+		
+		if (zz0 < clip) {
+			double p = (clip - zz0) / (zz1 - zz0);
+			zz0 = zz0 + (zz1 - zz0) * p;
+			xx0 = xx0 + (xx1 - xx0) * p;
+			t0 = t0 + (t1 - t0) * p;
+		}
+		if (zz1 < clip) {
+			double p = (clip - zz1) / (zz1 - zz0);
+			zz1 = zz1 + (zz1 - zz0) * p;
+			xx1 = xx1 + (xx1 - xx0) * p;
+			t1 = t1 + (t1 - t0) * p;
+		}
+		
 		double xPixel0 = xx0 / zz0 * fov + width / 2.0;
 		double xPixel1 = xx1 / zz1 * fov + width / 2.0;
 
 		if (xPixel0 > xPixel1)
 			return;
-		int xp0 = (int) xPixel0;
-		int xp1 = (int) xPixel1;
+		int xp0 = (int) Math.round(xPixel0);
+		int xp1 = (int) Math.round(xPixel1);
 		if (xp0 < 0)
 			xp0 = 0;
 		if (xp1 > width)
 			xp1 = width;
 
-		double yPixel00 = (u0 / zz0 * fov + height / 2.0);
-		double yPixel10 = (u1 / zz1 * fov + height / 2.0);
-		double yPixel01 = (d0 / zz0 * fov + height / 2.0);
-		double yPixel11 = (d1 / zz1 * fov + height / 2.0);
+		double yPixel00 = (u0 / zz0 * fov + height / 2.0) + 0.5;
+		double yPixel10 = (u1 / zz1 * fov + height / 2.0) + 0.5;
+		double yPixel01 = (d0 / zz0 * fov + height / 2.0) + 0.5;
+		double yPixel11 = (d1 / zz1 * fov + height / 2.0) + 0.5;
+		
+		double iz0 = 1 / zz0;
+		double iz1 = 1 / zz1;
+		
+		double xt0 = t0 * iz0;
+		double xt1 = t1 * iz1;
 		
 		for (int x = xp0; x < xp1; x++) {
-			double yPixel0 = yPixel00 + (x - xPixel0) * (yPixel10 - yPixel00) / (xPixel1 - xPixel0);
-			double yPixel1 = yPixel01 + (x - xPixel0) * (yPixel11 - yPixel01) / (xPixel1 - xPixel0);
+			
+			double p = (x - xPixel0) / (xPixel1 - xPixel0);
+			
+			double yPixel0 = yPixel00 + (yPixel10 - yPixel00) * p;
+			double yPixel1 = yPixel01 + (yPixel11 - yPixel01) * p;
+			double iz = iz0 + (iz1 - iz0) * p;
+			
+			if (depthBufferWall[x] > iz)
+				continue;
+			depthBufferWall[x] = iz;
+			
+			int xTex = (int) ((xt0 + (xt1 - xt0) * p) / iz);
 			
 			if (yPixel0 > yPixel1)
 				return;
-			int yp0 = (int) yPixel0;
-			int yp1 = (int) yPixel1;
-			if (xp0 < 0)
-				xp0 = 0;
-			if (xp1 > width)
-				xp1 = width;
+			int yp0 = (int) Math.floor(yPixel0);
+			int yp1 = (int) Math.floor(yPixel1);
+			if (yp0 < 0)
+				yp0 = 0;
+			if (yp1 > height)
+				yp1 = height;
 
 			for (int y = yp0; y < yp1; y++) {
-				depthBuffer[x + y * width] = 0;
-				pixels[x + y * width] = 0xff00ff;
+				double py = (y - yPixel0) / (yPixel1 - yPixel0);
+				int yTex = (int) (py * 16);
+				
+				depthBuffer[x + y * width] = 12 / iz;
+				pixels[x + y * width] = Textures.tilemap.pixels[xTex + 16 + (yTex * Textures.tilemap.width)];
 			}
 		}
 	}
@@ -126,8 +172,13 @@ public class Bitmap3D extends Bitmap {
 			int g = (color >> 8) & 0xff;
 			int b = (color) & 0xff;
 
-			double brightness = 255 - depthBuffer[i] * 4.0;
-
+			double brightness = 50000 / (depthBuffer[i] * depthBuffer[i]);
+			
+			if (brightness < 0)
+				brightness = 0;
+			if (brightness > 255)
+				brightness = 255;
+			
 			r = (int) (r / 255.0 * brightness);
 			g = (int) (g / 255.0 * brightness);
 			b = (int) (b / 255.0 * brightness);
