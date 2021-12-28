@@ -24,14 +24,29 @@ public class MainComponent extends Canvas implements Runnable {
 	
 	private boolean isRunning = false;
 	
-	public static BufferedImage image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
-	public static final int[] pixels = ((DataBufferInt)image.getRaster().getDataBuffer()).getData();
+	public BufferedImage image;
+	public final int[] pixels;
 	
 	private Game game;
 	private Screen screen;
 	private InputHandler inputHandler;
 	
 	public MainComponent() {
+		
+		image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
+		pixels = ((DataBufferInt)image.getRaster().getDataBuffer()).getData();
+		
+		Dimension dimension = new Dimension(WIDTH * SCALE, HEIGHT * SCALE);
+		setMinimumSize(dimension);
+		setMaximumSize(dimension);
+		setPreferredSize(dimension);
+		
+		inputHandler = new InputHandler();
+		
+		addKeyListener(inputHandler);
+		addMouseListener(inputHandler);
+		addMouseMotionListener(inputHandler);
+		addMouseWheelListener(inputHandler);
 	}
 	
 	public void start() {
@@ -47,7 +62,6 @@ public class MainComponent extends Canvas implements Runnable {
 	public void init() {
 		game = new Game();
 		screen = new Screen(WIDTH, HEIGHT);
-		inputHandler = new InputHandler();
 	}
 	
 	@SuppressWarnings("unused")
@@ -114,7 +128,7 @@ public class MainComponent extends Canvas implements Runnable {
 	}
 	
 	public void update() {
-		game.update();
+		game.update(inputHandler.keys);
 		screen.update();
 	}
 	
@@ -128,10 +142,6 @@ public class MainComponent extends Canvas implements Runnable {
 	public static void main(String[] args) {
 		JFrame frame = new JFrame();
 		MainComponent game = new MainComponent();
-		Dimension dimension = new Dimension(WIDTH * SCALE, HEIGHT * SCALE);
-		game.setMinimumSize(dimension);
-		game.setMaximumSize(dimension);
-		game.setPreferredSize(dimension);
 		frame.setTitle(TITLE);
 		frame.setResizable(false);
 		frame.add(game);

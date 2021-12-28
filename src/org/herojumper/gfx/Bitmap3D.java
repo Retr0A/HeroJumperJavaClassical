@@ -23,15 +23,17 @@ public class Bitmap3D extends Bitmap {
 		
 		fov = height;
 
-		//xCam = game.time % 1000.0 / 500.0;
-		//yCam = game.time % 1000.0 / 500.0;
-		//zCam = Math.sin(game.time / 100.0) * 2;
-		rot = Math.sin(game.time / 300.0) * 0.6;
-		//rot = 0.3;
+		xCam = game.player.x;
+		yCam = game.player.y;
+		zCam = 0;
+		rot = game.player.rot;
 		
 		rSin = Math.sin(rot);
 		rCos = Math.cos(rot);
 
+		if (game.player.walk)
+			zCam = Math.sin(game.time / 20.0) * 0.4;
+		
 		for (int y = 0; y < height; y++) {
 			double yd = ((y + 0.5) - (height / 2)) / fov;
 			double zd = (4 + zCam) / yd;
@@ -150,7 +152,7 @@ public class Bitmap3D extends Bitmap {
 				int yTex = (int) (py * 16);
 				
 				depthBuffer[x + y * width] = 12 / iz;
-				pixels[x + y * width] = Textures.tilemap.pixels[xTex + 16 + (yTex * Textures.tilemap.width)];
+				pixels[x + y * width] = Textures.tilemap.pixels[(xTex & 15) + 16 + ((yTex & 15) * Textures.tilemap.width)];
 			}
 		}
 	}
